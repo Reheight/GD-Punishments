@@ -1,0 +1,27 @@
+{
+    "name": "gd-punishments",
+    "version": "1.0.0",
+    "description": "Punishment System for Gamers Den",
+    "main": "index.js",
+    "scripts": {
+        "start": "node ."
+    },
+    "keywords": [
+        "punishment",
+        "punishments",
+        "discord",
+        "banning",
+        "ban",
+        "muting",
+        "mute",
+        "warn",
+        "warnings"
+    ],
+    "author": {
+        "name": "Dustin Palmatier"
+    },
+    "license": "ISC",
+    "dependencies": {
+        "discord.js": "^12.3.1"
+    }
+}
