@@ -12,12 +12,20 @@ function processMute(member, ending, client) {
     }, remainingTime);
 }
 
-function mutePlayer(member, client) {
+async function mutePlayer(member, client) {
     client.guilds.cache.get('744824625397235794').member(member).roles.add(client.guilds.cache.get('744824625397235794').roles.cache.find(r => r.name === "Muted"));
+
+    if (client.guilds.cache.get('744824625397235794').member(member).voice.channel) {
+        client.guilds.cache.get('744824625397235794').member(member).voice.setMute(true)
+    }
 }
 
 async function unmutePlayer(member, client) {
     client.guilds.cache.get('744824625397235794').member(member).roles.remove(client.guilds.cache.get('744824625397235794').roles.cache.find(r => r.name === "Muted"));
+    if (client.guilds.cache.get('744824625397235794').member(member).voice.channel) {
+        client.guilds.cache.get('744824625397235794').member(member).voice.setMute(false)
+    }
+
     await mysql.setInactive(member).catch(async (err) => {
         console.log(`
         There was an issue while setting the active status!
@@ -27,3 +35,5 @@ async function unmutePlayer(member, client) {
 }
 
 module.exports.processMute = processMute;
+module.exports.unmutePlayer = unmutePlayer;
+module.exports.mutePlayer = mutePlayer;

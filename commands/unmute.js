@@ -1,5 +1,6 @@
 const Discord = require('discord.js');
 const mysql = require('../util/mysql');
+const MuteUtil = require('../events/muting');
 
 module.exports = {
     "name": "unmute",
@@ -65,7 +66,31 @@ module.exports = {
                 })
             }
 
-            await uMember.roles.remove(message.guild.roles.cache.find(r => r.name === "Muted"));
+            await MuteUtil.unmutePlayer(uMember.user.id, client).catch(async (err) => {
+                
+            }).then(async () => {
+                const unmuteRecord = new Discord.MessageEmbed()
+                .setTitle("Unmuted on Gaming Den")
+                .setThumbnail(uMember.user.displayAvatarURL)
+                .addFields(
+                    { name: "Member", value: `<@${uMember.user.id}>\n(${uMember.user.id})`, inline: true },
+                    { name: "Actor", value: `<@${guildMember.user.id}>\n(${guildMember.user.id})`, inline: true}
+                )
+    
+                embed
+                .setTitle("**Unmuted on Gaming Den**")
+                .setDescription('You have been unmuted on `Gaming Den`')
+                .addFields(
+                    { name: "Actor", value: `<@${guildMember.user.id}>\n(${guildMember.user.id})`}
+                )
+                
+                await uMember.send(embed).catch(() => {
+                    console.log(`We were unable to PM ${uMember.user.tag} (${uMember.user.id}) about being unmuted!`)
+                })
+
+                await client.guilds.cache.get('744824625397235794').channels.cache.get('745319968752664725').send(unmuteRecord) // Send to GD Ban Appeal
+                await client.guilds.cache.get('745355697180639382').channels.cache.get('745359752837726349').send(unmuteRecord) // Send to Gamers Den
+            })
         } else {
             embed
             .setDescription("You do not have the correct permissions to perform this action!");
