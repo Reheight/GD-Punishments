@@ -1,0 +1,18 @@
+-------------------- Auto-Git Log --------------------
+		Wed Aug 19 2020 10:45:43 GMT-0400 (Eastern Daylight Time)
+------------------------------------------------------
+
+Modified files:
+* util/mysql.js
+
+
+Created files:
+* commands/mute.js
+* events/muting.js
+* util/time.js
+
+
+Deleted files:
+
+
+Renamed files:

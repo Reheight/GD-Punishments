@@ -33,17 +33,35 @@ module.exports = {
             }
             
             await mysql.fetchIncident(args[0]).then(async (result) => {
-                embed
-                .setTitle("**INCIDENT**")
-                .setDescription(`*${args[0]}*`)
-                .addFields(
-                    { name: "TYPE", value: `\`${result.TYPE}\``, inline: true },
-                    { name: "MEMBER", value: `<@${result.MEMBER}>`, inline: true },
-                    { name: "ACTOR", value: `<@${result.ACTOR}>`, inline: true },
-                    { name: "REASON", value: `\`${result.REASON}>\``, inline: true },
-                    { name: "APPEAL STATUS", value: `\`${result.STATUS}\``, inline: true},
-                    { name: "DATE", value: `\`${result.EXECUTED}\``, inline: false }
-                )
+                switch (result.TYPE) {
+                    case "BAN":
+                        embed
+                        .setTitle("**INCIDENT**")
+                        .setDescription(`*${args[0]}*`)
+                        .addFields(
+                            { name: "TYPE", value: `\`${result.TYPE}\``, inline: true },
+                            { name: "MEMBER", value: `<@${result.MEMBER}>`, inline: true },
+                            { name: "ACTOR", value: `<@${result.ACTOR}>`, inline: true },
+                            { name: "REASON", value: `\`${result.REASON}>\``, inline: true },
+                            { name: "APPEAL STATUS", value: `\`${result.STATUS}\``, inline: true},
+                            { name: "DATE", value: `\`${result.EXECUTED}\``, inline: false }
+                        )
+                        break;
+                    case "MUTE":
+                        embed
+                        .setTitle("**INCIDENT**")
+                        .setDescription(`*${args[0]}*`)
+                        .addFields(
+                            { name: "TYPE", value: `\`${result.TYPE}\``, inline: true },
+                            { name: "MEMBER", value: `<@${result.MEMBER}>`, inline: true },
+                            { name: "ACTOR", value: `<@${result.ACTOR}>`, inline: true },
+                            { name: "REASON", value: `\`${result.REASON}>\``, inline: true },
+                            { name: "APPEAL STATUS", value: `\`${result.STATUS}\``, inline: true},
+                            { name: "DATE", value: `\`${result.EXECUTED}\``, inline: true },
+                            { name: "EXPIRES", value: `\`${result.EXPIRES}\``, inline: true}
+                        )
+                        break;
+                }
 
                 return await channel.send(embed).then(async (msg) => {
                     await msg.delete({ timeout: 30000 });

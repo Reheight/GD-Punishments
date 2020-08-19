@@ -93,10 +93,41 @@ module.exports = {
             }
 
             let now = new Date();
-            let later = now.valueOf() + time.shortSinceToSeconds(args[1]);
+            let later = time.toDate(args[1]);
             const incidentID = UUID.generateUUID(16);
 
-            await mysql.importMute()
+            await mysql.importMute(incidentID, mMember.user.id, guildMember.user.id, now, later, args.slice(2).join(" ")).then(async () => {
+                const muteRecord = new Discord.MessageEmbed()
+                .setTitle("Muted on Gaming Den")
+                .setThumbnail(mMember.user.displayAvatarURL)
+                .addFields(
+                    { name: "Member", value: `<@${mMember.user.id}>\n(${mMember.user.id})`, inline: true },
+                    { name: "Actor", value: `<@${guildMember.user.id}>\n(${guildMember.user.id})`, inline: true},
+                    { name: "Reason", value: `\`${Discord.Util.escapeMarkdown(args.slice(2).join(" "))}\``, inline: true},
+                    { name: "Expires", value: `\`${later.getDate()}/${later.getMonth() + 1}/${later.getFullYear()}\``, inline: true},
+                    { name: "Incident", value: `\`${incidentID}\``, inline: true}
+                )
+    
+                embed
+                .setTitle("**Muted on Gaming Den**")
+                .setDescription('You have been muted on `Gaming Den`, you may appeal your mute here: https://discord.gg/DyAhgY9')
+                .addFields(
+                    { name: "Actor", value: `<@${guildMember.user.id}>\n(${guildMember.user.id})`},
+                    { name: "Reason", value: `\`${Discord.Util.escapeMarkdown(args.slice(2).join(" "))}\``, inline: true},
+                    { name: "Expires", value: `\`${later.getDate()}/${later.getMonth() + 1}/${later.getFullYear()}\``, inline: true},
+                    { name: "Incident", value: `\`${incidentID}\``, inline: true}
+                )
+                
+                await mMember.send(embed).catch(() => {
+                    console.log(`We were unable to PM ${mMember.user.tag} (${mMember.user.id}) about being muted!`)
+                })
+
+                await client.guilds.cache.get('744824625397235794').channels.cache.get('745319968752664725').send(muteRecord) // Send to GD Ban Appeal
+                await client.guilds.cache.get('745355697180639382').channels.cache.get('745359752837726349').send(muteRecord) // Send to Gamers Den
+            }).catch((err) => {
+                console.log(`We were unable to mute ${mMember.user.tag} (${mMember.user.id})!
+                ${err}`)
+            })
         } else {
             embed
             .setDescription("You do not have the correct permissions to perform this action!");

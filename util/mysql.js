@@ -68,7 +68,7 @@ async function importMute(incident, member, actor, now, later, reason) {
     var sql = "INSERT INTO incidents (TYPE, IDENTIFIER, MEMBER, ACTOR, REASON, EXECUTED, EXPIRES) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
     return new Promise((resolve, reject) => {
-        con.query(sql, [2, incident, member, actor, reason, now,], (err, result) => {
+        con.query(sql, [2, incident, member, actor, reason, now, later], (err, result) => {
             if (err) {
                 reject(err);
 
@@ -137,6 +137,49 @@ const fetchIncident = async (incident) => {
                                 STATUS: "Denied"
                             });
                     }
+                    break;
+                case 2:
+                    switch (result[0].STATUS) {
+                        case 0:
+                            return resolve({
+                                TYPE: "MUTE",
+                                MEMBER: result[0].MEMBER,
+                                ACTOR: result[0].ACTOR,
+                                REASON: result[0].REASON,
+                                EXECUTED: result[0].EXECUTED,
+                                EXPIRES: result[0].EXPIRES,
+                                STATUS: "Unopened"
+                            });
+                        case 1:
+                            return resolve({
+                                TYPE: "MUTE",
+                                MEMBER: result[0].MEMBER,
+                                ACTOR: result[0].ACTOR,
+                                REASON: result[0].REASON,
+                                EXECUTED: result[0].EXECUTED,
+                                EXPIRES: result[0].EXPIRES,
+                                STATUS: "Pending"
+                            });
+                        case 2:
+                            return resolve({
+                                TYPE: "MUTE",
+                                MEMBER: result[0].MEMBER,
+                                ACTOR: result[0].ACTOR,
+                                REASON: result[0].REASON,
+                                EXECUTED: result[0].EXECUTED,
+                                EXPIRES: result[0].EXPIRES,
+                                STATUS: "Accepted"
+                            });
+                        case 3:
+                            return resolve({
+                                TYPE: "MUTE",
+                                MEMBER: result[0].MEMBER,
+                                ACTOR: result[0].ACTOR,
+                                REASON: result[0].REASON,
+                                EXECUTED: result[0].EXECUTED,
+                                EXPIRES: result[0].EXPIRES,
+                                STATUS: "Denied"
+                            });
                     break;
                 default:
                     return resolve(result[0].TYPE)

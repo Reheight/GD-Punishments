@@ -1,14 +1,21 @@
-const shortSinceToSeconds = input => {
-    var p = input
-           .replace('h', 'x3600')
-           .replace('d', 'x86400')
-           .replace('w', 'x604800')
-           .replace('m', 'x2.628e+6')
-           .replace('y', 'x3.154e+7').split('x')
-    return (p[0] || 0) * (p[1] || 0)
+const mapping = {
+    w: 7 * 24 * 60 * 60 * 1000,
+    d: 24 * 60 * 60 * 1000,
+    h: 60 * 60 * 1000,
+    m: 30 * 24 * 60 * 60 * 1000,
+    y: 365 * 24 * 60 * 60 * 1000
+  };
+  
+  const toDate = (string) => {
+    const match = string.match(/(?<number>[0-9]*)(?<unit>[a-z]*)/);
+    if (match) {
+      const {number, unit} = match.groups;
+      const offset = number * mapping[unit];
+      return new Date(Date.now() + offset);
+    }
   }
 
-module.exports.shortSinceToSeconds = shortSinceToSeconds;
+module.exports.toDate = toDate;
 
 function containsTimeConversion(input) {
     var time = /[0-9][h|d|w|m|y]/;
