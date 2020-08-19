@@ -37,22 +37,24 @@ module.exports = {
                 .setTitle("**INCIDENT**")
                 .setDescription(`*${args[0]}*`)
                 .addFields(
-                    { name: "TYPE", value: `\`${result.type}\``, inline: true },
-                    { name: "MEMBER", value: `<@${result.member}>`, inline: true },
-                    { name: "ACTOR", value: `<@${result.actor}>`, inline: true },
-                    { name: "REASON", value: `\`${result.reason}>\``, inline: true },
-                    { name: "DATE", value: `<@${result.executed}>`, inline: true },
-                    { name: "APPEAL STATUS", value: `\`${result.status}\``, inline: true}
+                    { name: "TYPE", value: `\`${result.TYPE}\``, inline: true },
+                    { name: "MEMBER", value: `<@${result.MEMBER}>`, inline: true },
+                    { name: "ACTOR", value: `<@${result.ACTOR}>`, inline: true },
+                    { name: "REASON", value: `\`${result.REASON}>\``, inline: true },
+                    { name: "APPEAL STATUS", value: `\`${result.STATUS}\``, inline: true},
+                    { name: "DATE", value: `\`${result.EXECUTED}\``, inline: false }
                 )
 
-                return await channel.send(embed);
+                return await channel.send(embed).then(async (msg) => {
+                    await msg.delete({ timeout: 30000 });
+                })
             }).catch(async (err) => {
                 if (err == "INCIDENT_DOES_NOT_EXIST") {
                     embed
                     .setDescription(`We couldn't find the incident!`)
                     .addField("Provided Identifier", `\`${args[0]}\``, true);
     
-                    return await channel.send(embed);
+                    return await channel.send(embed)
                 } 
 
                 console.log(`

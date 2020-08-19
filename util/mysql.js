@@ -64,7 +64,7 @@ async function importBan(incident, member, actor, reason) {
 module.exports.importBan = importBan;
 
 const fetchIncident = async (incident) => {
-    var sql = "SELECT TYPE, MEMBER, ACTOR, REASON, EXECUTED, EXPIRES FROM incidents WHERE IDENTIFIER = ?";
+    var sql = "SELECT TYPE, MEMBER, ACTOR, REASON, EXECUTED, EXPIRES, STATUS FROM incidents WHERE IDENTIFIER = ?";
 
     return new Promise((resolve, reject) => {
         con.query(sql, incident, (err, result) => {
@@ -79,13 +79,46 @@ const fetchIncident = async (incident) => {
 
             switch (result[0].TYPE) {
                 case 1:
-                    return resolve({
-                        TYPE: "BAN",
-                        MEMBER: result[0].MEMBER,
-                        ACTOR: result[0].ACTOR,
-                        REASON: result[0].REASON,
-                        EXECUTED: result[0].EXECUTED
-                    });
+                    console.log("T")
+                    switch (result[0].STATUS) {
+                        case 0:
+                            return resolve({
+                                TYPE: "BAN",
+                                MEMBER: result[0].MEMBER,
+                                ACTOR: result[0].ACTOR,
+                                REASON: result[0].REASON,
+                                EXECUTED: result[0].EXECUTED,
+                                STATUS: "Unopened"
+                            });
+                        case 1:
+                            return resolve({
+                                TYPE: "BAN",
+                                MEMBER: result[0].MEMBER,
+                                ACTOR: result[0].ACTOR,
+                                REASON: result[0].REASON,
+                                EXECUTED: result[0].EXECUTED,
+                                STATUS: "Pending"
+                            });
+                        case 2:
+                            return resolve({
+                                TYPE: "BAN",
+                                MEMBER: result[0].MEMBER,
+                                ACTOR: result[0].ACTOR,
+                                REASON: result[0].REASON,
+                                EXECUTED: result[0].EXECUTED,
+                                STATUS: "Accepted"
+                            });
+                        case 3:
+                            return resolve({
+                                TYPE: "BAN",
+                                MEMBER: result[0].MEMBER,
+                                ACTOR: result[0].ACTOR,
+                                REASON: result[0].REASON,
+                                EXECUTED: result[0].EXECUTED,
+                                STATUS: "Denied"
+                            });
+                    }
+                    break;
                 default:
                     return resolve(result[0].TYPE)
             }
