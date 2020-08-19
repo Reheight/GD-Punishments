@@ -2,6 +2,7 @@ const Discord = require('discord.js');
 const time = require('../util/time');
 const mysql = require('../util/mysql');
 const UUID = require('../util/UUID');
+const MuteUtils = require('../events/muting');
 
 module.exports = {
     "name": "mute",
@@ -124,6 +125,10 @@ module.exports = {
 
                 await client.guilds.cache.get('744824625397235794').channels.cache.get('745319968752664725').send(muteRecord) // Send to GD Ban Appeal
                 await client.guilds.cache.get('745355697180639382').channels.cache.get('745359752837726349').send(muteRecord) // Send to Gamers Den
+
+                await mMember.roles.add(message.guild.roles.cache.find(r => r.name === "Muted"));
+
+                await MuteUtils.processMute(mMember.user.id, later);
             }).catch((err) => {
                 console.log(`We were unable to mute ${mMember.user.tag} (${mMember.user.id})!
                 ${err}`)

@@ -42,7 +42,7 @@ module.exports = {
                             { name: "TYPE", value: `\`${result.TYPE}\``, inline: true },
                             { name: "MEMBER", value: `<@${result.MEMBER}>`, inline: true },
                             { name: "ACTOR", value: `<@${result.ACTOR}>`, inline: true },
-                            { name: "REASON", value: `\`${result.REASON}>\``, inline: true },
+                            { name: "REASON", value: `\`${result.REASON}\``, inline: true },
                             { name: "APPEAL STATUS", value: `\`${result.STATUS}\``, inline: true},
                             { name: "DATE", value: `\`${result.EXECUTED}\``, inline: false }
                         )
@@ -55,7 +55,7 @@ module.exports = {
                             { name: "TYPE", value: `\`${result.TYPE}\``, inline: true },
                             { name: "MEMBER", value: `<@${result.MEMBER}>`, inline: true },
                             { name: "ACTOR", value: `<@${result.ACTOR}>`, inline: true },
-                            { name: "REASON", value: `\`${result.REASON}>\``, inline: true },
+                            { name: "REASON", value: `\`${result.REASON}\``, inline: true },
                             { name: "APPEAL STATUS", value: `\`${result.STATUS}\``, inline: true},
                             { name: "DATE", value: `\`${result.EXECUTED}\``, inline: true },
                             { name: "EXPIRES", value: `\`${result.EXPIRES}\``, inline: true}

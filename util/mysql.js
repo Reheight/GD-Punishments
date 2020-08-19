@@ -1,5 +1,6 @@
 const mysql = require('mysql');
 const credentials = require('../mysql.json');
+const MuteUtils = require('../events/muting');
 
 var con = mysql.createConnection({
     host: credentials.host,
@@ -65,7 +66,7 @@ module.exports.importBan = importBan;
 
 
 async function importMute(incident, member, actor, now, later, reason) {
-    var sql = "INSERT INTO incidents (TYPE, IDENTIFIER, MEMBER, ACTOR, REASON, EXECUTED, EXPIRES) VALUES (?, ?, ?, ?, ?, ?, ?)";
+    var sql = "INSERT INTO incidents (TYPE, IDENTIFIER, MEMBER, ACTOR, REASON, EXECUTED, EXPIRES, ACTIVE) VALUES (?, ?, ?, ?, ?, ?, ?, 1)";
 
     return new Promise((resolve, reject) => {
         con.query(sql, [2, incident, member, actor, reason, now, later], (err, result) => {
@@ -83,7 +84,7 @@ async function importMute(incident, member, actor, now, later, reason) {
 module.exports.importMute = importMute;
 
 const fetchIncident = async (incident) => {
-    var sql = "SELECT TYPE, MEMBER, ACTOR, REASON, EXECUTED, EXPIRES, STATUS FROM incidents WHERE IDENTIFIER = ?";
+    var sql = "SELECT TYPE, MEMBER, ACTOR, REASON, EXECUTED, EXPIRES, STATUS, ACTIVE FROM incidents WHERE IDENTIFIER = ?";
 
     return new Promise((resolve, reject) => {
         con.query(sql, incident, (err, result) => {
@@ -180,6 +181,7 @@ const fetchIncident = async (incident) => {
                                 EXPIRES: result[0].EXPIRES,
                                 STATUS: "Denied"
                             });
+                        }
                     break;
                 default:
                     return resolve(result[0].TYPE)
@@ -189,3 +191,25 @@ const fetchIncident = async (incident) => {
 }
 
 module.exports.fetchIncident = fetchIncident;
+
+function invokeMutes() {
+    var sql = "SELECT MEMBER, EXPIRES FROM incidents WHERE TYPE = 2 AND ACTIVE = 1";
+
+    return new Promise((resolve, reject) => {
+        con.query(sql, null, (err, result) => {
+            if (err) {
+                reject(err);
+
+                throw err;
+            }
+
+            result.forEach(async (row) => {
+                MuteUtils.processMute(row.MEMBER, row.EXPIRES);
+            })
+
+            resolve();
+        })
+    })
+}
+
+module.exports.invokeMutes = invokeMutes;

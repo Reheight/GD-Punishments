@@ -1,7 +1,7 @@
 const { token, prefix } = require('./config.json');
 const fs = require('fs');
 const { Client, Collection } = require('discord.js');
-const { handleConnection } = require('./util/mysql');
+const { handleConnection, invokeMutes } = require('./util/mysql');
 
 //#region Defining Discord Client
 const client = new Client();
@@ -21,6 +21,10 @@ client.on('ready', async () => {
 
     //#region Open MySQL connection
     await handleConnection();
+    //#endregion
+
+    //#region handle mute invoke
+    await invokeMutes();
     //#endregion
 })
 //#endregion
