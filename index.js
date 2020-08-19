@@ -1,6 +1,7 @@
 const { token, prefix } = require('./config.json');
 const fs = require('fs');
 const { Client, Collection } = require('discord.js');
+const { handleConnection } = require('./util/mysql');
 
 //#region Defining Discord Client
 const client = new Client();
@@ -16,6 +17,10 @@ client.on('ready', async () => {
 
     //#region Setting Custom Activity
     client.user.setActivity("Gamers Den", { type: "WATCHING" })
+    //#endregion
+
+    //#region Open MySQL connection
+    await handleConnection();
     //#endregion
 })
 //#endregion
