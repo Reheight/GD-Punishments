@@ -2,7 +2,8 @@ const mapping = {
     w: 7 * 24 * 60 * 60 * 1000,
     d: 24 * 60 * 60 * 1000,
     h: 60 * 60 * 1000,
-    m: 30 * 24 * 60 * 60 * 1000,
+    m: 60 * 1000,
+    s: 1 * 1000,
     y: 365 * 24 * 60 * 60 * 1000
   };
   
@@ -18,7 +19,7 @@ const mapping = {
 module.exports.toDate = toDate;
 
 function containsTimeConversion(input) {
-    var time = /[0-9][h|d|w|m|y]/;
+    var time = /[0-9][h|d|w|m|y|s]/;
     return time.test(input);
 }
 

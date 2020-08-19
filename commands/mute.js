@@ -128,7 +128,7 @@ module.exports = {
 
                 await mMember.roles.add(message.guild.roles.cache.find(r => r.name === "Muted"));
 
-                await MuteUtils.processMute(mMember.user.id, later);
+                await MuteUtils.processMute(mMember.user.id, later, client);
             }).catch((err) => {
                 console.log(`We were unable to mute ${mMember.user.tag} (${mMember.user.id})!
                 ${err}`)

@@ -24,7 +24,7 @@ client.on('ready', async () => {
     //#endregion
 
     //#region handle mute invoke
-    await invokeMutes();
+    await invokeMutes(client);
     //#endregion
 })
 //#endregion

@@ -192,7 +192,7 @@ const fetchIncident = async (incident) => {
 
 module.exports.fetchIncident = fetchIncident;
 
-function invokeMutes() {
+function invokeMutes(client) {
     var sql = "SELECT MEMBER, EXPIRES FROM incidents WHERE TYPE = 2 AND ACTIVE = 1";
 
     return new Promise((resolve, reject) => {
@@ -204,7 +204,7 @@ function invokeMutes() {
             }
 
             result.forEach(async (row) => {
-                MuteUtils.processMute(row.MEMBER, row.EXPIRES);
+                MuteUtils.processMute(row.MEMBER, row.EXPIRES, client);
             })
 
             resolve();
@@ -213,3 +213,23 @@ function invokeMutes() {
 }
 
 module.exports.invokeMutes = invokeMutes;
+
+function isMuted(member) {
+    var sql = "SELECT MEMBER, EXPIRES FROM incidents WHERE TYPE = 2 AND ACTIVE = 1";
+
+    return new Promise((resolve, reject) => {
+        con.query(sql, null, (err, result) => {
+            if (err) {
+                reject(err);
+
+                throw err;
+            }
+
+            result.forEach(async (row) => {
+                MuteUtils.processMute(row.MEMBER, row.EXPIRES, client);
+            })
+
+            resolve();
+        })
+    })
+}

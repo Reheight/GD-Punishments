@@ -1,0 +1,20 @@
+-------------------- Auto-Git Log --------------------
+		Wed Aug 19 2020 11:46:21 GMT-0400 (Eastern Daylight Time)
+------------------------------------------------------
+
+Modified files:
+* commands/lookup.js
+* commands/mute.js
+* events/muting.js
+* index.js
+* util/mysql.js
+
+
+Created files:
+* .autogit/logs/log-19-7-2020-11-16-3.txt
+
+
+Deleted files:
+
+
+Renamed files:
