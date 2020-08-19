@@ -1,0 +1,26 @@
+-------------------- Auto-Git Log --------------------
+		Wed Aug 19 2020 12:16:40 GMT-0400 (Eastern Daylight Time)
+------------------------------------------------------
+
+Modified files:
+* commands/mute.js
+* events/muting.js
+* index.js
+* package-lock.json
+* package.json
+* util/mysql.js
+* util/time.js
+
+
+Created files:
+* .autogit/logs/log-19-7-2020-11-46-21.txt
+* node_modules/long-timeout/README.md
+* node_modules/long-timeout/example.js
+* node_modules/long-timeout/index.js
+* node_modules/long-timeout/package.json
+
+
+Deleted files:
+
+
+Renamed files:
