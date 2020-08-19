@@ -1,17 +1,15 @@
 const mysql = require('mysql');
 const credentials = require('../mysql.json');
 
-var con;
+var con = mysql.createConnection({
+    host: credentials.host,
+    port: credentials.port,
+    user: credentials.username,
+    password: credentials.password,
+    database: credentials.database
+});
 
 function handleConnection() {
-    con = mysql.createConnection({
-        host: credentials.host,
-        port: credentials.port,
-        user: credentials.username,
-        password: credentials.password,
-        database: credentials.database
-    })
-
     con.connect(async (err) => {
         if (err) {
             console.log(`
@@ -48,7 +46,19 @@ function handleConnection() {
 module.exports.handleConnection = handleConnection;
 
 async function importBan(incident, member, actor, reason) {
+    var sql = "INSERT INTO incidents (TYPE, IDENTIFIER, MEMBER, ACTOR, REASON) VALUES (?, ?, ?, ?, ?)";
 
+    return new Promise((resolve, reject) => {
+        con.query(sql, [1, incident, member, actor, reason], (err, result) => {
+            if (err) {
+                reject(false)
+
+                throw err;
+            }
+
+            return resolve(true)
+        })
+    })
 }
 
 module.exports.importBan = importBan;

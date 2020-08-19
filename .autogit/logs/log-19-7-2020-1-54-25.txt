@@ -1,0 +1,20 @@
+-------------------- Auto-Git Log --------------------
+		Wed Aug 19 2020 01:54:25 GMT-0400 (Eastern Daylight Time)
+------------------------------------------------------
+
+Modified files:
+* index.js
+* run.bat
+
+
+Created files:
+* .autogit/autogit.json
+* commands/lookup.js
+* mysql.json
+* util/mysql.js
+
+
+Deleted files:
+
+
+Renamed files:

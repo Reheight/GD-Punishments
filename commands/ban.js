@@ -1,4 +1,6 @@
 const Discord = require('discord.js');
+const UUID = require('../util/UUID');
+const MYSQL = require('../util/mysql');
 
 module.exports = {
     "name": "ban",
@@ -90,31 +92,37 @@ module.exports = {
                 })
             }
 
+            const incidentID = UUID.generateUUID(16);
+
             const banRecord = new Discord.MessageEmbed()
             .setTitle("Banned from Gaming Den")
             .setThumbnail(bMember.user.displayAvatarURL)
             .addFields(
-                { name: "Member", value: `<@${bMember.user.id}>\n(${bMember.user.id})` },
-                { name: "Actor", value: `<@${guildMember.user.id}>\n(${guildMember.user.id})`},
-                { name: "Reason", value: `${args.slice(1).join(" ")}`}
+                { name: "Member", value: `<@${bMember.user.id}>\n(${bMember.user.id})`, inline: true },
+                { name: "Actor", value: `<@${guildMember.user.id}>\n(${guildMember.user.id})`, inline: true},
+                { name: "Reason", value: `\`${Discord.Util.escapeMarkdown(args.slice(1).join(" "))}\``, inline: true},
+                { name: "Incident", value: `\`${incidentID}\``, inline: true}
             )
-            
-            await client.guilds.cache.get('744824625397235794').channels.cache.get('745319968752664725').send(banRecord)
-            await client.guilds.cache.get('745355697180639382').channels.cache.get('745359752837726349').send(banRecord)
 
             embed
             .setTitle("**Banned from Gaming Den**")
             .setDescription('You have been banned from `Gaming Den`, you may appeal your ban here: https://discord.gg/DyAhgY9')
             .addFields(
                 { name: "Actor", value: `<@${guildMember.user.id}>\n(${guildMember.user.id})`},
-                { name: "Reason", value: `${args.slice(1).join(" ")}`}
+                { name: "Reason", value: `\`${Discord.Util.escapeMarkdown(args.slice(1).join(" "))}\``, inline: true},
+                { name: "Incident", value: `\`${incidentID}\``, inline: true}
             )
             
             await bMember.send(embed).catch(() => {
                 console.log(`We were unable to PM ${bMember.user.tag} (${bMember.user.id}) about being banned!`)
             })
 
-            await bMember.ban({ reason: args.slice(1).join(" ") }).catch(() => {
+            await bMember.ban({ reason: args.slice(1).join(" ") }).then(async () => {
+                await client.guilds.cache.get('744824625397235794').channels.cache.get('745319968752664725').send(banRecord) // Send to GD Ban Appeal
+                await client.guilds.cache.get('745355697180639382').channels.cache.get('745359752837726349').send(banRecord) // Send to Gamers Den
+
+                await MYSQL.importBan(incidentID, bMember.user.id, author.id, Discord.Util.escapeMarkdown(args.slice(1).join(" ")));
+            }).catch(() => {
                 console.log(`We were unable to ban ${bMember.user.tag} (${bMember.user.id})!`)
             })
             
