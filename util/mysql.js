@@ -63,6 +63,25 @@ async function importBan(incident, member, actor, reason) {
 
 module.exports.importBan = importBan;
 
+
+async function importMute(incident, member, actor, now, later, reason) {
+    var sql = "INSERT INTO incidents (TYPE, IDENTIFIER, MEMBER, ACTOR, REASON, EXECUTED, EXPIRES) VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+    return new Promise((resolve, reject) => {
+        con.query(sql, [2, incident, member, actor, reason, now,], (err, result) => {
+            if (err) {
+                reject(err);
+
+                throw err;
+            }
+
+            resolve();
+        })
+    })
+}
+
+module.exports.importMute = importMute;
+
 const fetchIncident = async (incident) => {
     var sql = "SELECT TYPE, MEMBER, ACTOR, REASON, EXECUTED, EXPIRES, STATUS FROM incidents WHERE IDENTIFIER = ?";
 
