@@ -121,7 +121,14 @@ module.exports = {
                 await client.guilds.cache.get('744824625397235794').channels.cache.get('745319968752664725').send(banRecord) // Send to GD Ban Appeal
                 await client.guilds.cache.get('745355697180639382').channels.cache.get('745359752837726349').send(banRecord) // Send to Gamers Den
 
-                await MYSQL.importBan(incidentID, bMember.user.id, author.id, Discord.Util.escapeMarkdown(args.slice(1).join(" ")));
+                await MYSQL.importBan(incidentID, bMember.user.id, author.id, Discord.Util.escapeMarkdown(args.slice(1).join(" "))).then(() => {
+                    console.log(`We were able to import the ban for '${bMember.id}'!`)
+                }).catch((err) => {
+                    console.log(`
+                    We were unable to import the ban for '${bMember.id}' as there was an error!
+                    ${err}
+                    `)
+                })
             }).catch(() => {
                 console.log(`We were unable to ban ${bMember.user.tag} (${bMember.user.id})!`)
             })

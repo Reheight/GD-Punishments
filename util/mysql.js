@@ -51,12 +51,12 @@ async function importBan(incident, member, actor, reason) {
     return new Promise((resolve, reject) => {
         con.query(sql, [1, incident, member, actor, reason], (err, result) => {
             if (err) {
-                reject(false)
+                reject(err);
 
                 throw err;
             }
 
-            return resolve(true)
+            resolve();
         })
     })
 }
@@ -64,10 +64,33 @@ async function importBan(incident, member, actor, reason) {
 module.exports.importBan = importBan;
 
 const fetchIncident = async (incident) => {
-    return {
-        member: "Hey there",
-        actor: ""
-    }
+    var sql = "SELECT TYPE, MEMBER, ACTOR, REASON, EXECUTED, EXPIRES FROM incidents WHERE IDENTIFIER = ?";
+
+    return new Promise((resolve, reject) => {
+        con.query(sql, incident, (err, result) => {
+            if (err) {
+                return reject(err);
+                throw err;
+            }
+
+            if (result.length <= 0) {
+                return reject("INCIDENT_DOES_NOT_EXIST");
+            }
+
+            switch (result[0].TYPE) {
+                case 1:
+                    return resolve({
+                        TYPE: "BAN",
+                        MEMBER: result[0].MEMBER,
+                        ACTOR: result[0].ACTOR,
+                        REASON: result[0].REASON,
+                        EXECUTED: result[0].EXECUTED
+                    });
+                default:
+                    return resolve(result[0].TYPE)
+            }
+        })
+    })
 }
 
 module.exports.fetchIncident = fetchIncident;
