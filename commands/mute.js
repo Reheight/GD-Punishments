@@ -23,8 +23,8 @@ module.exports = {
         if (roles.find(r => r.name === "Moderator" || r.name === "Administrator" || r.name === "Developer") || author.id === guild.owner.id) {
             if (guild.id !== '744824625397235794') {
                 embed
-                .setDescription(`**You can not use this command to ban in this server!**
-                *Try to right click the users name and select 'ban'*`)
+                .setDescription(`**You can not use this command to mute in this server!**
+                *Try to right click the users name and select 'mute'*`)
 
                 return await channel.send(embed).then(async (msg) => {
                     await msg.delete({ timeout: 30000 });
@@ -49,8 +49,27 @@ module.exports = {
 
             if (!mMember) {
                 embed
-                .setDescription(`**You provided an invalid member to ban!**
+                .setDescription(`**You provided an invalid member to mute!**
                 *They may have left the Discord server*`)
+
+                return await channel.send(embed).then(async (msg) => {
+                    await msg.delete({ timeout: 30000 });
+                })
+            }
+
+            let isMuted = await mysql.isMuted(mMember.user.id).catch(async (err) => {
+                embed
+                .setDescription(`We ran into an issue while checking if the member was muted!`)
+
+                return await channel.send(embed).then(async (msg) => {
+                    await msg.delete({ timeout: 30000 });
+                })
+            })
+
+            if (isMuted) {
+                embed
+                .setDescription(`**This member is already muted!**
+                *You must unmute them before muting them again!*`)
 
                 return await channel.send(embed).then(async (msg) => {
                     await msg.delete({ timeout: 30000 });

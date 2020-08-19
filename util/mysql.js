@@ -192,7 +192,7 @@ const fetchIncident = async (incident) => {
 
 module.exports.fetchIncident = fetchIncident;
 
-function invokeMutes(client) {
+async function invokeMutes(client) {
     var sql = "SELECT MEMBER, EXPIRES FROM incidents WHERE TYPE = 2 AND ACTIVE = 1";
     var now = new Date();
 
@@ -220,24 +220,44 @@ function invokeMutes(client) {
 
 module.exports.invokeMutes = invokeMutes;
 
-function isMuted(member) {
-    var sql = "SELECT MEMBER, EXPIRES FROM incidents WHERE TYPE = 2 AND ACTIVE = 1";
+async function isMuted(member) {
+    var sql = "SELECT * FROM incidents WHERE TYPE = 2 AND ACTIVE = 1 AND MEMBER = ?";
     var now = new Date();
 
     return new Promise((resolve, reject) => {
-        con.query(sql, null, (err, result) => {
+        con.query(sql, member, (err, result) => {
             if (err) {
                 reject(err);
 
                 throw err;
             }
 
-            result.forEach(async (row) => {
-
-                MuteUtils.processMute(row.MEMBER, row.EXPIRES, client);
-            })
-
-            resolve();
+            if (result.length > 0) {
+                resolve(true);
+            } else {
+                resolve(false);
+            }
         })
     })
 }
+
+module.exports.isMuted = isMuted;
+
+async function setInactive(member) {
+    var sql = "UPDATE incidents SET ACTIVE = 0 WHERE MEMBER = ?";
+    var now = new Date();
+
+    return new Promise((resolve, reject) => {
+        con.query(sql, member, (err, result) => {
+            if (err) {
+                reject(err);
+
+                throw err;
+            }
+
+            resolve(true);
+        })
+    })
+}
+
+module.exports.setInactive = setInactive;
