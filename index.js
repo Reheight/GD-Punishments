@@ -1,7 +1,8 @@
 const { token, prefix } = require('./config.json');
 const fs = require('fs');
 const { Client, Collection, MessageEmbed, Util } = require('discord.js');
-const { handleConnection, invokeMutes, fetchIncident } = require('./util/mysql');
+const { handleConnection, invokeMutes, fetchIncident, setPending, setDenied, setAccepted } = require('./util/mysql');
+const MuteUtil = require('./events/muting');
 const { resolve } = require('path');
 
 //#region Defining Discord Client
@@ -190,6 +191,219 @@ client.on('messageReactionAdd', async (reaction, user) => {
                                                                                                                 await collector.on('collect', async r => {
                                                                                                                     switch (r.emoji.name) {
                                                                                                                         case '✅':
+                                                                                                                            client.guilds.cache.get('745355697180639382').channels.create(`${incident}`, { type: "text" }).then(async (channel) => {
+                                                                                                                                await user.send("**You have submitted your appeal!**");
+
+                                                                                                                                await channel.setParent('746385820868542616');
+                                                                                                                                channel.send(appealMessage).then(async (appeal) => {
+                                                                                                                                    await setPending(incident);
+                                                                                                                                    await appeal.react('✅').catch((err) => {
+                                                                                                                                        console.log(err);
+                                                                                                                                    })
+                                                                                        
+                                                                                                                                    await appeal.react('❎').catch((err) => {
+                                                                                                                                        console.log(err);
+                                                                                                                                    })
+
+                                                                                                                                    const filter = (reaction, user) => !user.bot && reaction.emoji.name === '✅' || reaction.emoji.name === '❎';
+                                                                                                                                    const collector = appeal.createReactionCollector(filter, { time: 30000 });
+                                                                                                                                    
+                                                                                                                                    await collector.on('collect', async (r, u) => {
+                                                                                                                                        switch (r.emoji.name) {
+                                                                                                                                            case '✅':
+                                                                                                                                                await client.guilds.cache.get('744824625397235794').members.unban(x.MEMBER).then(async () => {
+                                                                                                                                                    const unbanRecord = new MessageEmbed()
+                                                                                                                                                    .setTitle("Unbanned from Gaming Den")
+                                                                                                                                                    .addFields(
+                                                                                                                                                        { name: "Member", value: `<@${x.MEMBER}>\n(${x.MEMBER})` },
+                                                                                                                                                        { name: "Actor", value: `<@${u.id}>\n(${u.id})`}
+                                                                                                                                                    )
+                                                                                                                                                    
+                                                                                                                                                    await client.guilds.cache.get('744824625397235794').channels.cache.get('745319968752664725').send(unbanRecord)
+                                                                                                                                                    await client.guilds.cache.get('745355697180639382').channels.cache.get('745359752837726349').send(unbanRecord)
+                                                                                                                                                        
+                                                                                                                                                    const embed = new MessageEmbed()
+                                                                                                                                                    .setTitle("__APPEAL ACCEPTED__")
+                                                                                                                                                    .setDescription(`Your appeal was accepted, you may join our server back by cicking this link: https://discord.gg/stUe6D6`)
+                                                                                                                                                    .addFields(
+                                                                                                                                                        { name: 'Actor', value: `<@${u.id}>`}
+                                                                                                                                                    )
+                                                                                                                                                    .setTimestamp()
+
+                                                                                                                                                    await setAccepted(incident);
+
+                                                                                                                                                    return await user.send(embed);
+                                                                                                                                                }).catch(async () => {
+                                                                                                                                                    embed
+                                                                                                                                                    .setDescription(`**We were unable to unban the member, try again!**
+                                                                                                                                                    *The member may not be banned!*`)
+                                                                                                                                    
+                                                                                                                                                    return await channel.send(embed).then(async (msg) => {
+                                                                                                                                                        await msg.delete({ timeout: 30000 })
+                                                                                                                                                    })
+                                                                                                                                                })
+                                                                                                                                                break;
+                                                                                                                                            case '❎':
+                                                                                                                                                const embed = new MessageEmbed()
+                                                                                                                                                .setTitle("__APPEAL DENIED__")
+                                                                                                                                                .setDescription(`Your appeal was denied!`)
+                                                                                                                                                .addFields(
+                                                                                                                                                    { name: 'Actor', value: `<@${u.id}>`}
+                                                                                                                                                )
+                                                                                                                                                .setTimestamp()
+
+                                                                                                                                                await setDenied(incident);
+
+                                                                                                                                                return await user.send(embed);
+                                                                                                                                                break;
+                                                                                                                                        }
+                                                                                                                                    })
+                                                                                                                                })
+                                                                                                                            })
+                                                                                                                            openAppeals = openAppeals.filter(u => u !== user.id);
+                                                                                                                            break;
+                                                                                                                        case '❎':
+                                                                                                                            await user.send("**Your appeal has been cancelled, you may open another appeal at any time!**");
+                                                                                                                            openAppeals = openAppeals.filter(u => u !== user.id);
+                                                                                                                            break;
+                                                                                                                    }
+                                                                                                                })
+                                                                                                            })
+                                                                                                        }
+                                                                                                    })
+                                                                                                })
+                                                                                                break;
+                                                                                            case '❎':
+                                                                                                await user.send("**It looks like there must have been a mistake, open another appeal and ensure you're using the richt incident ID!**");
+                                                                                                openAppeals = openAppeals.filter(u => u !== user.id);
+                                                                                                break;
+                                                                                        }
+                                                                                    })
+                                                                                })
+                                                                                
+                                                                                break;
+                                                                            case "MUTE":
+                                                                                await user.send(`**Were you muted by <@${x.ACTOR}> for \`${x.REASON}\`?**`).then(async (messageSent) => {
+                                                                                    openAppeals.push(user.id);
+                                        
+                                                                                    await messageSent.react('✅').catch((err) => {
+                                                                                        console.log(err);
+                                                                                    })
+                                        
+                                                                                    await messageSent.react('❎').catch((err) => {
+                                                                                        console.log(err);
+                                                                                    })
+                                        
+                                                                                    const filter = (reaction, user) => !user.bot && reaction.emoji.name === '✅' || reaction.emoji.name === '❎';
+                                                                                    const collector = messageSent.createReactionCollector(filter, { time: 30000 });
+                                        
+                                                                                    await collector.on('collect', async r => {
+                                                                                        switch (r.emoji.name) {
+                                                                                            case '✅':
+                                                                                                await user.send("**Why do you think you should be unmuted?**").then(async (a) => {
+                                                                                                    await a.channel.awaitMessages((a) => a !== undefined, { max: 1 }).then(async (c) => {
+                                                                                                        if (c.first().content.length < 20) {
+                                                                                                            await user.send("**Your appeal reason was not long enough, open another appeal and try again!**");
+                                                                                                            openAppeals = openAppeals.filter(u => u !== user.id);
+                                                                                                        } else {
+                                                                                                            const appealMessage = new MessageEmbed()
+                                                                                                            .setTitle(`__MUTE APPEAL__`)
+                                                                                                            .setDescription(`
+                                                                                                            **Appeal Reason:**
+                                                                                                            ${Util.escapeMarkdown(c.first().content)}
+                                                                                                            `)
+                                                                                                            .addFields(
+                                                                                                                { name: "Incident", value: incident, inline: true },
+                                                                                                                { name: "Member", value: `<@${x.MEMBER}>`, inline: true },
+                                                                                                                { name: "Actor", value: `<@${x.ACTOR}>`, inline: true}
+                                                                                                            )
+                                                                                                            .setTimestamp()
+
+                                                                                                            await user.send(`**Do you wish to submit this appeal, remember that this is final and cannot be edited!**`).then(async (messageSent) => {
+                                                                                                                openAppeals.push(user.id);
+                                                                    
+                                                                                                                await messageSent.react('✅').catch((err) => {
+                                                                                                                    console.log(err);
+                                                                                                                })
+                                                                    
+                                                                                                                await messageSent.react('❎').catch((err) => {
+                                                                                                                    console.log(err);
+                                                                                                                })
+                                                                    
+                                                                                                                const filter = (reaction, user) => !user.bot && reaction.emoji.name === '✅' || reaction.emoji.name === '❎';
+                                                                                                                const collector = messageSent.createReactionCollector(filter, { time: 30000 });
+                                                                    
+                                                                                                                await collector.on('collect', async r => {
+                                                                                                                    switch (r.emoji.name) {
+                                                                                                                        case '✅':
+                                                                                                                            client.guilds.cache.get('745355697180639382').channels.create(`${incident}`, { type: "text" }).then(async (channel) => {
+                                                                                                                                await user.send("**You have submitted your appeal!**");
+
+                                                                                                                                await channel.setParent('746385910307881040');
+                                                                                                                                channel.send(appealMessage).then(async (appeal) => {
+                                                                                                                                    await setPending(incident);
+                                                                                                                                    await appeal.react('✅').catch((err) => {
+                                                                                                                                        console.log(err);
+                                                                                                                                    })
+                                                                                        
+                                                                                                                                    await appeal.react('❎').catch((err) => {
+                                                                                                                                        console.log(err);
+                                                                                                                                    })
+
+                                                                                                                                    const filter = (reaction, user) => !user.bot && reaction.emoji.name === '✅' || reaction.emoji.name === '❎';
+                                                                                                                                    const collector = appeal.createReactionCollector(filter, { time: 30000 });
+                                                                                                                                    
+                                                                                                                                    await collector.on('collect', async (r, u) => {
+                                                                                                                                        switch (r.emoji.name) {
+                                                                                                                                            case '✅':
+                                                                                                                                                await MuteUtil.unmutePlayer(x.MEMBER, client).catch(async (err) => {
+                                                                                                                                                    embed
+                                                                                                                                                    .setDescription(`**We were unable to unmute the member!**`)
+                                                                                                                                    
+                                                                                                                                                    return await channel.send(embed);
+                                                                                                                                                }).then(async () => {
+                                                                                                                                                    const unmuteRecord = new MessageEmbed()
+                                                                                                                                                    .setTitle("Unmuted on Gaming Den")
+                                                                                                                                                    .addFields(
+                                                                                                                                                        { name: "Member", value: `<@${x.MEMBER}>\n(${x.MEMBER})`, inline: true },
+                                                                                                                                                        { name: "Actor", value: `<@${x.ACTOR}>\n(${x.ACTOR})`, inline: true}
+                                                                                                                                                    )
+                                                                                                                                        
+                                                                                                                                                    embed
+                                                                                                                                                    .setTitle("**Unmuted on Gaming Den**")
+                                                                                                                                                    .setDescription('You have been unmuted on `Gaming Den`')
+                                                                                                                                                    .addFields(
+                                                                                                                                                        { name: "Actor", value: `<@${x.ACTOR}>\n(${x.ACTOR})`}
+                                                                                                                                                    )
+                                                                                                                                                    
+                                                                                                                                                    await uMember.send(embed).catch(() => {
+                                                                                                                                                        console.log(`We were unable to PM ${uMember.user.tag} (${uMember.user.id}) about being unmuted!`)
+                                                                                                                                                    })
+
+                                                                                                                                                    await setDenied(incident)
+                                                                                                                                    
+                                                                                                                                                    await client.guilds.cache.get('744824625397235794').channels.cache.get('745319968752664725').send(unmuteRecord) // Send to GD Ban Appeal
+                                                                                                                                                    await client.guilds.cache.get('745355697180639382').channels.cache.get('745359752837726349').send(unmuteRecord) // Send to Gamers Den
+                                                                                                                                                })
+                                                                                                                                                break;
+                                                                                                                                            case '❎':
+                                                                                                                                                const embed = new MessageEmbed()
+                                                                                                                                                .setTitle("__APPEAL DENIED__")
+                                                                                                                                                .setDescription(`Your appeal was denied!`)
+                                                                                                                                                .addFields(
+                                                                                                                                                    { name: 'Actor', value: `<@${u.id}>`}
+                                                                                                                                                )
+                                                                                                                                                .setTimestamp()
+
+                                                                                                                                                await setDenied(incident);
+
+                                                                                                                                                return await user.send(embed);
+                                                                                                                                                break;
+                                                                                                                                        }
+                                                                                                                                    })
+                                                                                                                                })
+                                                                                                                            })
+                                                                                                                            openAppeals = openAppeals.filter(u => u !== user.id);
                                                                                                                             break;
                                                                                                                         case '❎':
                                                                                                                             await user.send("**Your appeal has been cancelled, you may open another appeal at any time!**");

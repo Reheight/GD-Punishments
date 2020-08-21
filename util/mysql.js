@@ -260,3 +260,61 @@ async function setInactive(member) {
 }
 
 module.exports.setInactive = setInactive;
+
+async function setAccepted(incident) {
+    var sql = "UPDATE incidents SET STATUS = 2 WHERE IDENTIFIER = ?";
+    var now = new Date();
+
+    return new Promise((resolve, reject) => {
+        con.query(sql, incident, (err, result) => {
+            if (err) {
+                reject(err);
+
+                throw err;
+            }
+
+            resolve(true);
+        })
+    })
+}
+
+module.exports.setAccepted = setAccepted;
+
+async function setPending(incident) {
+    var sql = "UPDATE incidents SET STATUS = 1 WHERE IDENTIFIER = ?";
+    var now = new Date();
+
+    return new Promise((resolve, reject) => {
+        con.query(sql, incident, (err, result) => {
+            if (err) {
+                reject(err);
+
+                throw err;
+            }
+
+            resolve(true);
+        })
+    })
+}
+
+module.exports.setPending = setPending;
+
+async function setDenied(incident) {
+    var sql = "UPDATE incidents SET STATUS = 3 WHERE IDENTIFIER = ?";
+    var now = new Date();
+
+    return new Promise((resolve, reject) => {
+        con.query(sql, incident, (err, result) => {
+            if (err) {
+                reject(err);
+
+                throw err;
+            }
+
+            resolve(true);
+        })
+    })
+}
+
+module.exports.setDenied = setDenied;
+
