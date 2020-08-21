@@ -82,15 +82,47 @@ client.on('messageReactionAdd', async (reaction, user) => {
                         case '746311763854884894':
                             switch (reaction.emoji.id) {
                                 case '746307326641700965':
-                                    message.reactions.resolve('746307326641700965').users.remove(user);
+                                    message.reactions.resolve('746307326641700965').users.remove(user).catch((err) => {
+                                        console.log(err);
+                                    })
 
-                                    if (openAppeals.some(u => u === user.id)) {
-                                        return
+                                    if (openAppeals.includes(user.id)) {
+                                        return;
                                     }
 
-                                    await user.send("Do you wish to appeal your punishment?").then(async (msg) => {
+                                    await user.send("**Do you wish to appeal your punishment?**").then(async (messageSent) => {
                                         openAppeals.push(user.id);
-                                    }).catch(() => {
+
+                                        messageSent.react('✅').catch((err) => {
+                                            console.log(err);
+                                        })
+
+                                        messageSent.react('❎').catch((err) => {
+                                            console.log(err);
+                                        })
+
+                                        const filter = (reaction, user) => !user.bot && reaction.emoji.name === '✅' || reaction.emoji.name === '❎';
+                                        const collector = messageSent.createReactionCollector(filter, { time: 30000 });
+
+                                        collector.on('collect', async r => {
+                                            const DMChannel = messageSent.channel;
+                                            switch (r.emoji.name) {
+                                                case '✅':
+                                                    break;
+                                                case '❎':
+                                                    await DMChannel.send("**You have closed your appeal.**").then(async () => {
+                                                        //openAppeals = openAppeals.filter(u => u === user.id);
+
+                                                        //console.log(openAppeals);
+                                                    }).catch(err => {
+                                                        console.log(err);
+                                                    })
+                                                    break;
+                                                default:
+                                                    break;
+                                            }
+                                        })
+                                    }).catch((err) => {
                                         channel.send(`<@${user.id}> you must allow server members to directly message you!`).then(async (msg) => {
                                             await msg.delete({ timeout: 30000 })
                                         })
