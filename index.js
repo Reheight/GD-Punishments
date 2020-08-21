@@ -66,79 +66,82 @@ client.on('message', async (message) => {
 })
 //#endregion
 
-/* //#region Reacting to Messages
+//#region Reacting to Messages
 
-const openAppeals = [];
+var openAppeals = [];
 client.on('messageReactionAdd', async (reaction, user) => {
     const message = reaction.message;
     const channel = message.channel;
     const guild = message.guild;
 
-    switch (guild.id) {
-        case '745355697180639382':
-            switch (channel.id) {
-                case '745367973002477579':
-                    switch (message.id) {
-                        case '746311763854884894':
-                            switch (reaction.emoji.id) {
-                                case '746307326641700965':
-                                    message.reactions.resolve('746307326641700965').users.remove(user).catch((err) => {
-                                        console.log(err);
-                                    })
+    if (user.bot) return;
+    //if (reaction.message.channel.type == "dm") return;
 
-                                    if (openAppeals.includes(user.id)) {
-                                        return;
-                                    }
-
-                                    await user.send("**Do you wish to appeal your punishment?**").then(async (messageSent) => {
-                                        openAppeals.push(user.id);
-
-                                        messageSent.react('✅').catch((err) => {
+    if (message.channel.type !== "dm") {
+        switch (guild.id) {
+            case '745355697180639382':
+                switch (channel.id) {
+                    case '745367973002477579':
+                        switch (message.id) {
+                            case '746311763854884894':
+                                switch (reaction.emoji.id) {
+                                    case '746307326641700965':
+                                        message.reactions.resolve('746307326641700965').users.remove(user).catch((err) => {
                                             console.log(err);
                                         })
 
-                                        messageSent.react('❎').catch((err) => {
-                                            console.log(err);
-                                        })
+                                        if (openAppeals.includes(user.id)) {
+                                            return;
+                                        }
 
-                                        const filter = (reaction, user) => !user.bot && reaction.emoji.name === '✅' || reaction.emoji.name === '❎';
-                                        const collector = messageSent.createReactionCollector(filter, { time: 30000 });
+                                        await user.send("**Do you wish to appeal your punishment?**").then(async (messageSent) => {
+                                            openAppeals.push(user.id);
 
-                                        collector.on('collect', async r => {
-                                            const DMChannel = messageSent.channel;
-                                            switch (r.emoji.name) {
-                                                case '✅':
-                                                    break;
-                                                case '❎':
-                                                    await DMChannel.send("**You have closed your appeal.**").then(async () => {
-                                                        //openAppeals = openAppeals.filter(u => u === user.id);
+                                            await messageSent.react('✅').catch((err) => {
+                                                console.log(err);
+                                            })
 
-                                                        //console.log(openAppeals);
-                                                    }).catch(err => {
-                                                        console.log(err);
-                                                    })
-                                                    break;
-                                                default:
-                                                    break;
-                                            }
+                                            await messageSent.react('❎').catch((err) => {
+                                                console.log(err);
+                                            })
+
+                                            const filter = (reaction, user) => !user.bot && reaction.emoji.name === '✅' || reaction.emoji.name === '❎';
+                                            const collector = messageSent.createReactionCollector(filter, { time: 30000 });
+
+                                            await collector.on('collect', async r => {
+                                                const DMChannel = messageSent.channel;
+                                                switch (r.emoji.name) {
+                                                    case '✅':
+                                                        break;
+                                                    case '❎':
+                                                        await DMChannel.send("**You have closed your appeal.**").then(async () => {
+                                                            openAppeals = openAppeals.filter(u => u !== user.id);
+                                                        }).catch(err => {
+                                                            console.log(err);
+                                                        })
+                                                        break;
+                                                    default:
+                                                        break;
+                                                }
+                                            })
+                                        }).catch(async (err) => {
+                                            await channel.send(`<@${user.id}> you must allow server members to directly message you!`).then(async (msg) => {
+                                                await msg.delete({ timeout: 30000 })
+                                            })
                                         })
-                                    }).catch((err) => {
-                                        channel.send(`<@${user.id}> you must allow server members to directly message you!`).then(async (msg) => {
-                                            await msg.delete({ timeout: 30000 })
-                                        })
-                                    })
-                                    break;
-                                default:
-                                    message.reactions.resolve(reaction).users.remove(user);
-                            }
-                            break;
-                    }
-                    break;
-            }
-            break;
+                                        break;
+                                    default:
+                                        message.reactions.resolve(reaction).users.remove(user);
+                                }
+                                break;
+                        }
+                        break;
+                }
+                break;
+        }
     }
 });
-//#endregion */
+//#endregion
 
 //#region Starting Bot
 client.login(token);
