@@ -1,6 +1,6 @@
 const { token, prefix } = require('./config.json');
 const fs = require('fs');
-const { Client, Collection, MessageEmbed } = require('discord.js');
+const { Client, Collection, MessageEmbed, Util } = require('discord.js');
 const { handleConnection, invokeMutes, fetchIncident } = require('./util/mysql');
 const { resolve } = require('path');
 
@@ -127,7 +127,93 @@ client.on('messageReactionAdd', async (reaction, user) => {
 
                                                         await incidentID.then(async (incident) => {
                                                             await fetchIncident(incident).then(async (x) => {
-                                                                console.log(x);
+                                                                if (x.MEMBER !== user.id) {
+                                                                    await user.send("**You can not appeal a punishment that does not belong to you!**");
+                                                                    openAppeals = openAppeals.filter(u => u !== user.id);
+                                                                } else {
+                                                                    if (x.STATUS !== "Unopened") {
+                                                                        await user.send("**This punishment is no longer able to be appealed!**");
+                                                                        openAppeals = openAppeals.filter(u => u !== user.id);
+                                                                    } else {
+                                                                        switch (x.TYPE) {
+                                                                            case "BAN":
+                                                                                await user.send(`**Were you banned by <@${x.ACTOR}> for \`${x.REASON}\`?**`).then(async (messageSent) => {
+                                                                                    openAppeals.push(user.id);
+                                        
+                                                                                    await messageSent.react('✅').catch((err) => {
+                                                                                        console.log(err);
+                                                                                    })
+                                        
+                                                                                    await messageSent.react('❎').catch((err) => {
+                                                                                        console.log(err);
+                                                                                    })
+                                        
+                                                                                    const filter = (reaction, user) => !user.bot && reaction.emoji.name === '✅' || reaction.emoji.name === '❎';
+                                                                                    const collector = messageSent.createReactionCollector(filter, { time: 30000 });
+                                        
+                                                                                    await collector.on('collect', async r => {
+                                                                                        switch (r.emoji.name) {
+                                                                                            case '✅':
+                                                                                                await user.send("**Why do you think you should be unbanned?**").then(async (a) => {
+                                                                                                    await a.channel.awaitMessages((a) => a !== undefined, { max: 1 }).then(async (c) => {
+                                                                                                        if (c.first().content.length < 20) {
+                                                                                                            await user.send("**Your appeal reason was not long enough, open another appeal and try again!**");
+                                                                                                            openAppeals = openAppeals.filter(u => u !== user.id);
+                                                                                                        } else {
+                                                                                                            const appealMessage = new MessageEmbed()
+                                                                                                            .setTitle(`__BAN APPEAL__`)
+                                                                                                            .setDescription(`
+                                                                                                            **Appeal Reason:**
+                                                                                                            ${Util.escapeMarkdown(c.first().content)}
+                                                                                                            `)
+                                                                                                            .addFields(
+                                                                                                                { name: "Incident", value: incident, inline: true },
+                                                                                                                { name: "Member", value: `<@${x.MEMBER}>`, inline: true },
+                                                                                                                { name: "Actor", value: `<@${x.ACTOR}>`, inline: true}
+                                                                                                            )
+                                                                                                            .setTimestamp()
+
+                                                                                                            await user.send(`**Do you wish to submit this appeal, remember that this is final and cannot be edited!**`).then(async (messageSent) => {
+                                                                                                                openAppeals.push(user.id);
+                                                                    
+                                                                                                                await messageSent.react('✅').catch((err) => {
+                                                                                                                    console.log(err);
+                                                                                                                })
+                                                                    
+                                                                                                                await messageSent.react('❎').catch((err) => {
+                                                                                                                    console.log(err);
+                                                                                                                })
+                                                                    
+                                                                                                                const filter = (reaction, user) => !user.bot && reaction.emoji.name === '✅' || reaction.emoji.name === '❎';
+                                                                                                                const collector = messageSent.createReactionCollector(filter, { time: 30000 });
+                                                                    
+                                                                                                                await collector.on('collect', async r => {
+                                                                                                                    switch (r.emoji.name) {
+                                                                                                                        case '✅':
+                                                                                                                            break;
+                                                                                                                        case '❎':
+                                                                                                                            await user.send("**Your appeal has been cancelled, you may open another appeal at any time!**");
+                                                                                                                            openAppeals = openAppeals.filter(u => u !== user.id);
+                                                                                                                            break;
+                                                                                                                    }
+                                                                                                                })
+                                                                                                            })
+                                                                                                        }
+                                                                                                    })
+                                                                                                })
+                                                                                                break;
+                                                                                            case '❎':
+                                                                                                await user.send("**It looks like there must have been a mistake, open another appeal and ensure you're using the richt incident ID!**");
+                                                                                                openAppeals = openAppeals.filter(u => u !== user.id);
+                                                                                                break;
+                                                                                        }
+                                                                                    })
+                                                                                })
+                                                                                
+                                                                                break;
+                                                                        }
+                                                                    }
+                                                                }
                                                             }).catch(async (err) => {
                                                                 await user.send("**There was an error while getting information on this incident, open another appeal and try again!**");
                                                                 openAppeals = openAppeals.filter(u => u !== user.id);

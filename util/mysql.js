@@ -99,7 +99,6 @@ const fetchIncident = async (incident) => {
 
             switch (result[0].TYPE) {
                 case 1:
-                    console.log("T")
                     switch (result[0].STATUS) {
                         case 0:
                             return resolve({
