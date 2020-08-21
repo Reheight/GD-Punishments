@@ -1,6 +1,6 @@
 const { token, prefix } = require('./config.json');
 const fs = require('fs');
-const { Client, Collection } = require('discord.js');
+const { Client, Collection, MessageEmbed } = require('discord.js');
 const { handleConnection, invokeMutes } = require('./util/mysql');
 
 //#region Defining Discord Client
@@ -26,7 +26,17 @@ client.on('ready', async () => {
     //#region handle mute invoke
     await invokeMutes(client);
     //#endregion
+
+    //#region Caching Message
+    await cacheMessages();
+    //#endregion
 })
+//#endregion
+
+//#region Caching Messages
+async function cacheMessages() {
+    await client.guilds.cache.get('745355697180639382').channels.cache.get('745367973002477579').messages.fetch('746311763854884894');
+}
 //#endregion
 
 //#region Command Handling
@@ -54,6 +64,48 @@ client.on('message', async (message) => {
     client.commands.get(command).execute(author, message, args, client);
     //#endregion
 })
+//#endregion
+
+//#region Reacting to Messages
+
+const openAppeals = [];
+client.on('messageReactionAdd', async (reaction, user) => {
+    const message = reaction.message;
+    const channel = message.channel;
+    const guild = message.guild;
+
+    switch (guild.id) {
+        case '745355697180639382':
+            switch (channel.id) {
+                case '745367973002477579':
+                    switch (message.id) {
+                        case '746311763854884894':
+                            switch (reaction.emoji.id) {
+                                case '746307326641700965':
+                                    message.reactions.resolve('746307326641700965').users.remove(user);
+
+                                    if (openAppeals.some(u => u === user.id)) {
+                                        return
+                                    }
+
+                                    await user.send("Do you wish to appeal your punishment?").then(async (msg) => {
+                                        openAppeals.push(user.id);
+                                    }).catch(() => {
+                                        channel.send(`<@${user.id}> you must allow server members to directly message you!`).then(async (msg) => {
+                                            await msg.delete({ timeout: 30000 })
+                                        })
+                                    })
+                                    break;
+                                default:
+                                    message.reactions.resolve(reaction).users.remove(user);
+                            }
+                            break;
+                    }
+                    break;
+            }
+            break;
+    }
+});
 //#endregion
 
 //#region Starting Bot
