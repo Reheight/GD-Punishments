@@ -66,7 +66,7 @@ client.on('message', async (message) => {
 })
 //#endregion
 
-//#region Reacting to Messages
+/* //#region Reacting to Messages
 
 const openAppeals = [];
 client.on('messageReactionAdd', async (reaction, user) => {
@@ -138,7 +138,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
             break;
     }
 });
-//#endregion
+//#endregion */
 
 //#region Starting Bot
 client.login(token);
