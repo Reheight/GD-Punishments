@@ -1,7 +1,8 @@
 const { token, prefix } = require('./config.json');
 const fs = require('fs');
 const { Client, Collection, MessageEmbed } = require('discord.js');
-const { handleConnection, invokeMutes } = require('./util/mysql');
+const { handleConnection, invokeMutes, fetchIncident } = require('./util/mysql');
+const { resolve } = require('path');
 
 //#region Defining Discord Client
 const client = new Client();
@@ -112,6 +113,32 @@ client.on('messageReactionAdd', async (reaction, user) => {
                                                 const DMChannel = messageSent.channel;
                                                 switch (r.emoji.name) {
                                                     case '✅':
+                                                        let incidentID = new Promise(async (resolve, reject) => {
+                                                            await user.send("**Provide the incident ID attributed to your punishment:**").then(async (a) => {
+                                                                await a.channel.awaitMessages((a) => a !== undefined, { max: 1 }).then(async (c) => {
+                                                                    if (c.first().content.length !== 16 || isNaN(c.first().content)) {
+                                                                        return reject("INVALID_IDENTIFIER");
+                                                                    } else {
+                                                                        return resolve(c.first().content);
+                                                                    }
+                                                                })
+                                                            })
+                                                        })
+
+                                                        await incidentID.then(async (incident) => {
+                                                            await fetchIncident(incident).then(async (x) => {
+                                                                console.log(x);
+                                                            }).catch(async (err) => {
+                                                                await user.send("**There was an error while getting information on this incident, open another appeal and try again!**");
+                                                                openAppeals = openAppeals.filter(u => u !== user.id);
+                                                            })
+                                                        }).catch(async (err) => {
+                                                            if (err === "INVALID_IDENTIFIER") {
+                                                                await user.send("**You provided an invalid incident ID, open another appeal and try again!**");
+                                                                openAppeals = openAppeals.filter(u => u !== user.id);
+                                                            }
+                                                        })
+
                                                         break;
                                                     case '❎':
                                                         await DMChannel.send("**You have closed your appeal.**").then(async () => {
