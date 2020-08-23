@@ -1,0 +1,16 @@
+-------------------- Auto-Git Log --------------------
+		Sun Aug 23 2020 18:12:07 GMT-0400 (Eastern Daylight Time)
+------------------------------------------------------
+
+Modified files:
+* events/muting.js
+
+
+Created files:
+* .autogit/logs/log-23-7-2020-17-41-49.txt
+
+
+Deleted files:
+
+
+Renamed files:
