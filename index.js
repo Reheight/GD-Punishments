@@ -232,15 +232,11 @@ client.on('messageReactionAdd', async (reaction, user) => {
 
                                                                                                                                                     await setAccepted(incident);
 
-                                                                                                                                                    return await user.send(embed);
+                                                                                                                                                    await user.send(embed);
+
+                                                                                                                                                    return channel.delete();
                                                                                                                                                 }).catch(async () => {
-                                                                                                                                                    embed
-                                                                                                                                                    .setDescription(`**We were unable to unban the member, try again!**
-                                                                                                                                                    *The member may not be banned!*`)
-                                                                                                                                    
-                                                                                                                                                    return await channel.send(embed).then(async (msg) => {
-                                                                                                                                                        await msg.delete({ timeout: 30000 })
-                                                                                                                                                    })
+                                                                                                                                                    
                                                                                                                                                 })
                                                                                                                                                 break;
                                                                                                                                             case '❎':
@@ -254,7 +250,9 @@ client.on('messageReactionAdd', async (reaction, user) => {
 
                                                                                                                                                 await setDenied(incident);
 
-                                                                                                                                                return await user.send(embed);
+                                                                                                                                                await user.send(embed);
+
+                                                                                                                                                return channel.delete();
                                                                                                                                                 break;
                                                                                                                                         }
                                                                                                                                     })
@@ -283,6 +281,10 @@ client.on('messageReactionAdd', async (reaction, user) => {
                                                                                 
                                                                                 break;
                                                                             case "MUTE":
+                                                                                if (x.EXPIRES < new Date()) {
+                                                                                    openAppeals = openAppeals.filter(u => u !== user.id);
+                                                                                    return await user.send('**Your mute has already expired!**');
+                                                                                }
                                                                                 await user.send(`**Were you muted by <@${x.ACTOR}> for \`${x.REASON}\`?**`).then(async (messageSent) => {
                                                                                     openAppeals.push(user.id);
                                         
@@ -357,10 +359,8 @@ client.on('messageReactionAdd', async (reaction, user) => {
                                                                                                                                         switch (r.emoji.name) {
                                                                                                                                             case '✅':
                                                                                                                                                 await MuteUtil.unmutePlayer(x.MEMBER, client).catch(async (err) => {
-                                                                                                                                                    embed
-                                                                                                                                                    .setDescription(`**We were unable to unmute the member!**`)
                                                                                                                                     
-                                                                                                                                                    return await channel.send(embed);
+                                                                                                                                                    return await channel.send("**We were unable to unmute the player!**");
                                                                                                                                                 }).then(async () => {
                                                                                                                                                     const unmuteRecord = new MessageEmbed()
                                                                                                                                                     .setTitle("Unmuted on Gaming Den")
@@ -369,21 +369,23 @@ client.on('messageReactionAdd', async (reaction, user) => {
                                                                                                                                                         { name: "Actor", value: `<@${x.ACTOR}>\n(${x.ACTOR})`, inline: true}
                                                                                                                                                     )
                                                                                                                                         
-                                                                                                                                                    embed
+                                                                                                                                                    const embed = new MessageEmbed()
                                                                                                                                                     .setTitle("**Unmuted on Gaming Den**")
                                                                                                                                                     .setDescription('You have been unmuted on `Gaming Den`')
                                                                                                                                                     .addFields(
                                                                                                                                                         { name: "Actor", value: `<@${x.ACTOR}>\n(${x.ACTOR})`}
                                                                                                                                                     )
                                                                                                                                                     
-                                                                                                                                                    await uMember.send(embed).catch(() => {
-                                                                                                                                                        console.log(`We were unable to PM ${uMember.user.tag} (${uMember.user.id}) about being unmuted!`)
+                                                                                                                                                    await user.send(embed).catch(() => {
+                                                                                                                                                        console.log(`We were unable to PM ${user.tag} (${user.id}) about being unmuted!`)
                                                                                                                                                     })
 
                                                                                                                                                     await setDenied(incident)
                                                                                                                                     
                                                                                                                                                     await client.guilds.cache.get('744824625397235794').channels.cache.get('745319968752664725').send(unmuteRecord) // Send to GD Ban Appeal
                                                                                                                                                     await client.guilds.cache.get('745355697180639382').channels.cache.get('745359752837726349').send(unmuteRecord) // Send to Gamers Den
+
+                                                                                                                                                    return channel.delete();
                                                                                                                                                 })
                                                                                                                                                 break;
                                                                                                                                             case '❎':
@@ -397,7 +399,9 @@ client.on('messageReactionAdd', async (reaction, user) => {
 
                                                                                                                                                 await setDenied(incident);
 
-                                                                                                                                                return await user.send(embed);
+                                                                                                                                                await user.send(embed);
+
+                                                                                                                                                return channel.delete();
                                                                                                                                                 break;
                                                                                                                                         }
                                                                                                                                     })
