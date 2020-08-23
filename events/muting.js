@@ -15,12 +15,17 @@ function processMute(member, ending, client) {
 async function mutePlayer(member, client) {
     client.guilds.cache.get('744824625397235794').member(member).roles.add(client.guilds.cache.get('744824625397235794').roles.cache.find(r => r.name === "Muted"));
 
-    client.guilds.cache.get('744824625397235794').member(member).voice.setMute(true)
+    if (client.guilds.cache.get('744824625397235794').member(member).voice.channel) {
+        client.guilds.cache.get('744824625397235794').member(member).voice.setChannel(null)
+    }
 }
 
 async function unmutePlayer(member, client) {
     client.guilds.cache.get('744824625397235794').member(member).roles.remove(client.guilds.cache.get('744824625397235794').roles.cache.find(r => r.name === "Muted"));
-    client.guilds.cache.get('744824625397235794').member(member).voice.setMute(false)
+    
+    if (client.guilds.cache.get('744824625397235794').member(member).voice.channel) {
+        client.guilds.cache.get('744824625397235794').member(member).voice.setChannel(null)
+    }
 
     await mysql.setInactive(member).catch(async (err) => {
         console.log(`
