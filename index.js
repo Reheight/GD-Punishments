@@ -3,7 +3,6 @@ const fs = require('fs');
 const { Client, Collection, MessageEmbed, Util } = require('discord.js');
 const { handleConnection, invokeMutes, fetchIncident, setPending, setDenied, setAccepted } = require('./util/mysql');
 const MuteUtil = require('./events/muting');
-const { resolve } = require('path');
 
 //#region Defining Discord Client
 const client = new Client();
